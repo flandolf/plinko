@@ -3,41 +3,56 @@ using UnityEngine;
 public class BallSpawner : MonoBehaviour
 {
     public GameObject ballPrefab;  // Assign the ball prefab in the Inspector
-
     public GameObject variables;
-    // This method is called when the button is clicked
+
+    private float dropValueMultiplier = 2f;  // Multiplier for increasing or decreasing drop value
+    private float spawnDelay = 0.1f;         // 100 milliseconds delay
+    private float lastSpawnTime = 0f;        // Time of last spawn
+
     public void SpawnBall()
     {
-        // check for money
-        if (variables.GetComponent<Variables>().money < variables.GetComponent<Variables>().dropValue)
+        Variables varScript = variables.GetComponent<Variables>();
+
+        // Check for money
+        if (varScript.money < varScript.dropValue)
         {
             return;
         }
-        for (int i = 0; i < variables.GetComponent<Variables>().dropAmount; i++)
+
+        for (int i = 0; i < varScript.dropAmount; i++)
         {
-            variables.GetComponent<Variables>().money -= variables.GetComponent<Variables>().dropValue;
+            varScript.money -= varScript.dropValue;
             float x = Random.Range(-1.0f, 1.0f);
-            Instantiate(ballPrefab, new Vector3(x,19, 0), Quaternion.identity);
-        }
-    }
-    
-        
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            SpawnBall();
-        }
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            // Increase the drop amount by 1
-            variables.GetComponent<Variables>().dropValue = variables.GetComponent<Variables>().dropValue * 2 ;
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            // Decrease the drop amount by 1
-            variables.GetComponent<Variables>().dropValue = variables.GetComponent<Variables>().dropValue / 2 ;
+            Instantiate(ballPrefab, new Vector3(x, 19, 0), Quaternion.identity);
         }
     }
 
+    void Update()
+    {
+        float currentTime = Time.time;
+
+        if (Input.GetKey(KeyCode.Space))
+        {
+            if (currentTime - lastSpawnTime >= spawnDelay)
+            {
+                SpawnBall();
+                lastSpawnTime = currentTime;
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            // Increase the drop amount by a multiplier
+            Variables varScript = variables.GetComponent<Variables>();
+            varScript.dropValue = Mathf.Round((float)(varScript.dropValue * dropValueMultiplier));
+        }
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            // Decrease the drop amount by a divisor
+            Variables varScript = variables.GetComponent<Variables>();
+            varScript.dropValue = Mathf.Round((float)(varScript.dropValue / dropValueMultiplier));
+            
+        }
+    }
 }
